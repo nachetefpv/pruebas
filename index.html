@@ -3,190 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cronómetro Elegante</title>
+    <title>Cronómetro Móvil V5 (Audio Focus)</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Roboto+Mono:wght@500;700&display=swap');
-
         :root {
-            --background-color: #fdfdfd; /* Un blanco muy ligeramente roto, casi imperceptible */
-            --text-color: #1a1a1a; /* Negro profundo pero no absoluto */
-            --text-secondary-color: #666666;
-            --border-color: #eaeaea;
-            --shadow-color-light: rgba(0, 0, 0, 0.05);
-            --shadow-color-medium: rgba(0, 0, 0, 0.1);
-
-            --start-color: #4CAF50;
-            --start-hover-color: #409444;
-            --stop-color: #f44336;
-            --stop-hover-color: #d32f2f;
-            --reset-color: #7f8c8d; /* Gris neutro */
-            --reset-hover-color: #606c6d;
-
-            --button-text-color: #ffffff;
-
-            --border-radius-sm: 8px;
-            --border-radius-md: 12px;
-            --border-radius-lg: 16px;
+            --background-color: #fdfdfd; --text-color: #1a1a1a; --text-secondary-color: #666666;
+            --border-color: #eaeaea; --shadow-color-light: rgba(0, 0, 0, 0.05);
+            --shadow-color-medium: rgba(0, 0, 0, 0.1); --start-color: #4CAF50;
+            --start-hover-color: #409444; --stop-color: #f44336; --stop-hover-color: #d32f2f;
+            --reset-color: #7f8c8d; --reset-hover-color: #606c6d; --button-text-color: #ffffff;
+            --border-radius-sm: 8px; --border-radius-md: 12px; --border-radius-lg: 16px;
         }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            font-family: 'Inter', sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center; /* Centrar el contenido principal */
-            min-height: 100vh;
-            background-color: var(--background-color);
-            color: var(--text-color);
-            padding: 20px 15px;
-            -webkit-tap-highlight-color: transparent; /* Evitar highlight azul en móviles al tocar */
+            font-family: 'Inter', sans-serif; display: flex; flex-direction: column; align-items: center;
+            justify-content: center; min-height: 100vh; background-color: var(--background-color);
+            color: var(--text-color); padding: 20px 15px; -webkit-tap-highlight-color: transparent;
         }
-
         .app-container {
-            width: 100%;
-            max-width: 380px; /* Ligeramente más estrecho para un look más móvil */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background-color: var(--background-color); /* Para que la sombra se vea bien */
-            padding: 30px 25px;
-            border-radius: var(--border-radius-lg);
-            box-shadow: 0 8px 25px var(--shadow-color-medium);
+            width: 100%; max-width: 380px; display: flex; flex-direction: column; align-items: center;
+            background-color: var(--background-color); padding: 30px 25px;
+            border-radius: var(--border-radius-lg); box-shadow: 0 8px 25px var(--shadow-color-medium);
         }
-        
         h1 {
-            font-weight: 700;
-            margin-bottom: 30px;
-            font-size: 2em;
-            text-align: center;
+            font-weight: 700; margin-bottom: 30px; font-size: 2em; text-align: center;
             color: var(--text-color);
         }
-
         #timer-display-wrapper {
-            width: 100%;
-            background-color: #ffffff; /* Blanco puro para el display */
-            border-radius: var(--border-radius-md);
-            padding: 20px; /* Ajustado */
-            margin-bottom: 35px;
-            box-shadow: inset 0 2px 8px var(--shadow-color-light); /* Sombra interior sutil */
+            width: 100%; background-color: #ffffff; border-radius: var(--border-radius-md);
+            padding: 20px; margin-bottom: 35px; box-shadow: inset 0 2px 8px var(--shadow-color-light);
             border: 1px solid var(--border-color);
         }
-
         #timer-display {
-            font-family: 'Roboto Mono', monospace;
-            font-size: 3.2em; 
-            font-weight: 500; /* Ligeramente menos bold para un look más fino */
-            text-align: center;
-            color: var(--text-color);
-            letter-spacing: 1.5px;
-            line-height: 1.2;
+            font-family: 'Roboto Mono', monospace; font-size: 3.2em; font-weight: 500;
+            text-align: center; color: var(--text-color); letter-spacing: 1.5px; line-height: 1.2;
         }
-        
         @media (max-width: 360px) {
-            #timer-display {
-                font-size: 2.6em;
-            }
-            h1 {
-                font-size: 1.7em;
-            }
-             .app-container {
-                padding: 25px 20px;
-            }
+            #timer-display { font-size: 2.6em; } h1 { font-size: 1.7em; }
+            .app-container { padding: 25px 20px; }
         }
-
         .controls {
-            display: flex;
-            flex-direction: column; /* Botones apilados verticalmente */
-            gap: 18px; /* Espacio entre botones */
-            width: 100%;
-            align-items: center; /* Centrar los botones en el contenedor de controles */
+            display: flex; flex-direction: column; gap: 18px; width: 100%; align-items: center;
         }
-
         .controls button {
-            font-family: 'Inter', sans-serif;
-            font-weight: 600;
-            border: none;
-            border-radius: var(--border-radius-md);
-            cursor: pointer;
-            transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1); /* Transición más suave */
-            padding: 18px 20px; 
-            font-size: 1.25em;
-            color: var(--button-text-color);
-            width: 100%; /* Ocupar todo el ancho disponible en su contenedor */
-            max-width: 320px; /* Un máximo para que no se hagan gigantes */
-            box-shadow: 0 4px 12px var(--shadow-color-light);
+            font-family: 'Inter', sans-serif; font-weight: 600; border: none;
+            border-radius: var(--border-radius-md); cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+            padding: 18px 20px; font-size: 1.25em; color: var(--button-text-color);
+            width: 100%; max-width: 320px; box-shadow: 0 4px 12px var(--shadow-color-light);
             text-align: center;
         }
-        
-        #startBtn {
-            background-color: var(--start-color);
-        }
+        #startBtn { background-color: var(--start-color); }
         #startBtn:hover:not(:disabled) {
-            background-color: var(--start-hover-color);
-            transform: translateY(-3px);
+            background-color: var(--start-hover-color); transform: translateY(-3px);
             box-shadow: 0 6px 15px var(--shadow-color-medium);
         }
-
-        #stopBtn {
-            background-color: var(--stop-color);
-        }
+        #stopBtn { background-color: var(--stop-color); display: none; }
         #stopBtn:hover:not(:disabled) {
-            background-color: var(--stop-hover-color);
-            transform: translateY(-3px);
+            background-color: var(--stop-hover-color); transform: translateY(-3px);
             box-shadow: 0 6px 15px var(--shadow-color-medium);
         }
-        
         #resetBtn {
-            background-color: transparent;
-            color: var(--reset-color);
-            border: 2px solid var(--border-color);
-            padding: 14px 20px;
-            font-size: 1em;
-            font-weight: 600;
-            box-shadow: none;
-            width: 70%; /* Un poco más pequeño que start/stop */
-            max-width: 220px;
+            background-color: transparent; color: var(--reset-color);
+            border: 2px solid var(--border-color); padding: 14px 20px; font-size: 1em;
+            font-weight: 600; box-shadow: none; width: 70%; max-width: 220px;
         }
         #resetBtn:hover:not(:disabled) {
-            background-color: #f7f7f7;
-            border-color: #d0d0d0;
-            color: var(--reset-hover-color);
+            background-color: #f7f7f7; border-color: #d0d0d0; color: var(--reset-hover-color);
             transform: translateY(-2px);
         }
-
-        /* Estilos para botones deshabilitados */
         button:disabled {
-            background-color: #f0f0f0 !important;
-            color: #b0b0b0 !important;
-            cursor: not-allowed;
-            box-shadow: none !important;
-            transform: translateY(0) !important;
-            border-color: #e0e0e0 !important; /* Aplicar también al borde de reset */
-        }
-
-        /* Ocultar el botón de stop por defecto */
-        #stopBtn {
-            display: none;
+            background-color: #f0f0f0 !important; color: #b0b0b0 !important; cursor: not-allowed;
+            box-shadow: none !important; transform: translateY(0) !important;
+            border-color: #e0e0e0 !important;
         }
     </style>
-    <!-- Incluir NoSleep.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/nosleep/0.12.0/NoSleep.min.js"></script>
 </head>
 <body>
-
     <div class="app-container">
         <h1>Cronómetro</h1>
-        
         <div id="timer-display-wrapper">
             <div id="timer-display">00:00:00</div>
         </div>
-
         <div class="controls">
             <button id="startBtn">Start</button>
             <button id="stopBtn">Stop</button> 
@@ -194,14 +93,11 @@
         </div>
     </div>
 
-    <!-- El div de debug se ha eliminado de la vista -->
-
     <script>
         const timerDisplay = document.getElementById('timer-display');
         const startBtn = document.getElementById('startBtn');
         const stopBtn = document.getElementById('stopBtn');
         const resetBtn = document.getElementById('resetBtn');
-        // const debugLog = document.getElementById('debug'); // Ya no se usa para mostrar en pantalla
 
         let startTime;
         let elapsedTime = 0;
@@ -215,61 +111,99 @@
         const synth = window.speechSynthesis;
         let voices = [];
         let speechInitialized = false;
+        let voicesLoadPromise = null; // Promesa para la carga de voces
+        let voicesAreReady = false; // Bandera simple
 
-        // Función de log solo para consola del navegador
         function logToConsole(message) {
-            console.log(`[CRONO] ${message}`);
+            console.log(`[CRONO V5] ${message}`);
         }
 
-        function populateVoiceList() {
-            if (typeof speechSynthesis === 'undefined') {
-                logToConsole("Speech Synthesis no soportado.");
-                return;
-            }
-            voices = synth.getVoices().filter(voice => voice.lang.startsWith('es'));
-            if (voices.length === 0) {
-                 voices = synth.getVoices().filter(voice => voice.default && voice.lang.startsWith('es'));
-            }
-            // logToConsole(`Voces cargadas. Encontradas ${voices.length} voces en español.`);
+        function ensureVoicesAreLoaded() {
+            if (voicesAreReady) return Promise.resolve(voices); // Ya están listas
+            if (voicesLoadPromise) return voicesLoadPromise; // Ya hay una promesa en curso
+
+            voicesLoadPromise = new Promise((resolve) => {
+                if (typeof speechSynthesis === 'undefined') {
+                    logToConsole("Speech Synthesis no soportado.");
+                    voicesAreReady = true; // Para que no se quede bloqueado esperando
+                    resolve([]); // Resuelve con array vacío
+                    return;
+                }
+
+                const tryPopulateAndResolve = () => {
+                    const availableVoices = synth.getVoices();
+                    if (availableVoices.length > 0) {
+                        voices = availableVoices.filter(voice => voice.lang.startsWith('es'));
+                        logToConsole(`Voces pobladas. Encontradas ${voices.length} en español de ${availableVoices.length} total.`);
+                        voicesAreReady = true;
+                        speechSynthesis.removeEventListener('voiceschanged', voiceChangeHandler);
+                        resolve(voices);
+                    } else {
+                        logToConsole("getVoices() devolvió 0 voces. Esperando onvoiceschanged...");
+                    }
+                };
+                
+                const voiceChangeHandler = () => {
+                    logToConsole("'voiceschanged' event disparado.");
+                    tryPopulateAndResolve();
+                };
+
+                // Intentar poblar inmediatamente
+                tryPopulateAndResolve();
+
+                if (!voicesAreReady) { // Si no se poblaron inmediatamente, escuchar el evento
+                    speechSynthesis.addEventListener('voiceschanged', voiceChangeHandler);
+                    // Timeout por si 'voiceschanged' nunca se dispara (común en algunos navegadores)
+                    setTimeout(() => {
+                        if (!voicesAreReady) {
+                            logToConsole("Timeout esperando 'voiceschanged'. Intentando poblar de nuevo.");
+                            tryPopulateAndResolve(); // Último intento
+                            if (!voicesAreReady) {
+                                logToConsole("No se pudieron cargar voces después del timeout. Se usará lang='es'.");
+                                voicesAreReady = true; // Permitir continuar, se usará lang='es'
+                                resolve([]); // Resuelve para no bloquear
+                            }
+                        }
+                    }, 2500); // 2.5 segundos de espera
+                }
+            });
+            return voicesLoadPromise;
         }
 
-        if (typeof speechSynthesis !== 'undefined') {
-            populateVoiceList();
-            if (speechSynthesis.onvoiceschanged !== undefined) {
-                speechSynthesis.onvoiceschanged = populateVoiceList;
-            }
-        } else {
-            logToConsole("API SpeechSynthesis no encontrada.");
-        }
 
         function speak(text) {
-            if (!synth || !text) return;
-            
-            if (!speechInitialized && synth.paused) {
-                 try {
-                    const dummyUtterance = new SpeechSynthesisUtterance('');
-                    dummyUtterance.volume = 0;
-                    synth.speak(dummyUtterance);
-                 } catch (e) { /* Silencio en caso de error aquí */ }
+            if (!synth || !text || !speechInitialized) {
+                logToConsole(`Speak: Abortado (synth:${!!synth}, text:${!!text}, initialized:${speechInitialized})`);
+                return;
             }
-            speechInitialized = true; 
 
             if (synth.speaking) {
+                logToConsole("Speak: Cancelando habla anterior.");
                 synth.cancel(); 
             }
 
             const utterThis = new SpeechSynthesisUtterance(text);
-            utterThis.onerror = function (event) {
-                logToConsole(`Error en SpeechSynthesis: ${event.error}`);
-            };
+            utterThis.onerror = (event) => logToConsole(`Speech Error: ${event.error} para texto: "${text}"`);
+            utterThis.onstart = () => logToConsole(`Speech Start: "${text}"`);
+            // utterThis.onend = () => logToConsole(`Speech End: "${text}"`); // Puede ser verboso
 
-            let spanishVoice = voices.find(voice => voice.lang === 'es-ES' || voice.lang === 'es-MX');
-            if (!spanishVoice && voices.length > 0) {
-                spanishVoice = voices.find(voice => voice.lang.startsWith('es'));
+            // Intentar usar voces específicas si están listas, sino fallback a lang='es'
+            if (voicesAreReady && voices.length > 0) {
+                let spanishVoice = voices.find(voice => voice.lang === 'es-ES' || voice.lang === 'es-MX');
+                if (!spanishVoice) {
+                    spanishVoice = voices.find(voice => voice.lang.startsWith('es')); // Intento más general
+                }
+                if (spanishVoice) {
+                    utterThis.voice = spanishVoice;
+                    // logToConsole(`Usando voz: ${spanishVoice.name}`);
+                } else {
+                    utterThis.lang = 'es';
+                    logToConsole("No se encontró voz específica en español, usando lang='es'.");
+                }
+            } else {
+                utterThis.lang = 'es'; // Fallback si las voces no están listas o no hay en español
+                logToConsole("Voces no listas o no hay en español, usando lang='es'.");
             }
-
-            if (spanishVoice) utterThis.voice = spanishVoice;
-            else utterThis.lang = 'es';
             
             utterThis.pitch = 1;
             utterThis.rate = 1;
@@ -277,7 +211,7 @@
             try {
                 synth.speak(utterThis);
             } catch (e) {
-                logToConsole(`Error al llamar a synth.speak: ${e.message}`);
+                logToConsole(`Excepción al llamar a synth.speak: ${e.message}`);
             }
         }
 
@@ -290,62 +224,45 @@
         }
 
         function updateTimer() {
-            // No es necesario reasignar elapsedTime aquí si isRunning es false,
-            // ya que se calcula en stopTimer.
-            // Solo actualiza si está corriendo.
             if (isRunning) {
                  const currentElapsedTime = Date.now() - startTime;
-                 elapsedTime = currentElapsedTime; // Actualiza el global para que las cues lo usen
+                 elapsedTime = currentElapsedTime;
                  timerDisplay.textContent = formatTime(elapsedTime);
                  checkAndPlayCues();
-            } else {
-                // Si no está corriendo, el display ya debería tener el tiempo de pausa.
-                // Esto evita que el display parpadee o se actualice innecesariamente
-                // si updateTimer se llamara por alguna razón después de parar.
-                // La lógica actual con clearInterval debería prevenir esto.
             }
         }
 
-
         function checkAndPlayCues() {
-            // Esta función no necesita cambios respecto a la lógica de cues
             const totalSeconds = Math.floor(elapsedTime / 1000);
             const minutes = Math.floor(totalSeconds / 60);
             const secondsInMinute = totalSeconds % 60;
-            let cuePlayedThisTurn = false;
-
+            // La lógica de las cues no cambia
             if (totalSeconds <= 30) {
-                if (totalSeconds === 10 && !playedCues.has("10s")) { speak("10 segundos"); playedCues.add("10s"); cuePlayedThisTurn = true; }
-                else if (totalSeconds === 20 && !playedCues.has("20s")) { speak("20 segundos"); playedCues.add("20s"); cuePlayedThisTurn = true; }
-                else if (totalSeconds === 30 && !playedCues.has("30s")) { speak("30 segundos"); playedCues.add("30s"); cuePlayedThisTurn = true; }
-            }
-
-            if (!cuePlayedThisTurn && totalSeconds > 30 && totalSeconds < 8 * 60) {
-                if (secondsInMinute === 0 && minutes > 0) {
-                    const cueKey = `${minutes}m`;
-                    if (!playedCues.has(cueKey)) { speak(`${minutes} minuto${minutes > 1 ? 's' : ''}`); playedCues.add(cueKey); cuePlayedThisTurn = true; }
+                if (totalSeconds === 10 && !playedCues.has("10s")) { speak("10 segundos"); playedCues.add("10s");}
+                else if (totalSeconds === 20 && !playedCues.has("20s")) { speak("20 segundos"); playedCues.add("20s");}
+                else if (totalSeconds === 30 && !playedCues.has("30s")) { speak("30 segundos"); playedCues.add("30s");}
+            } else if (totalSeconds < 8 * 60) { // Entre >30s y <8min
+                if (secondsInMinute === 0 && minutes > 0 && !playedCues.has(`${minutes}m`)) {
+                    speak(`${minutes} minuto${minutes > 1 ? 's' : ''}`); playedCues.add(`${minutes}m`);
                 }
-            }
-
-            if (!cuePlayedThisTurn && totalSeconds >= 8 * 60 && totalSeconds <= (9 * 60 + 30)) {
-                if (totalSeconds === 8 * 60 && !playedCues.has("8m0s")) { speak("8 minutos"); playedCues.add("8m0s"); cuePlayedThisTurn = true; }
-                else if (totalSeconds === (8 * 60 + 30) && !playedCues.has("8m30s")) { speak("8 minutos 30 segundos"); playedCues.add("8m30s"); cuePlayedThisTurn = true; }
-                else if (totalSeconds === 9 * 60 && !playedCues.has("9m0s")) { speak("9 minutos"); playedCues.add("9m0s"); cuePlayedThisTurn = true; }
-                else if (totalSeconds === (9 * 60 + 30) && !playedCues.has("9m30s")) { speak("9 minutos 30 segundos"); playedCues.add("9m30s"); cuePlayedThisTurn = true; }
-            }
-
-            if (!cuePlayedThisTurn && totalSeconds > (9 * 60 + 30) && totalSeconds <= 10 * 60) {
-                if (totalSeconds === (9 * 60 + 40) && !playedCues.has("9m40s")) { speak("9 minutos 40 segundos"); playedCues.add("9m40s"); cuePlayedThisTurn = true; }
-                else if (totalSeconds === (9 * 60 + 50) && !playedCues.has("9m50s")) { speak("9 minutos 50 segundos"); playedCues.add("9m50s"); cuePlayedThisTurn = true; }
-                else if (totalSeconds === 10 * 60 && !playedCues.has("10m0s")) { speak("10 minutos"); playedCues.add("10m0s"); cuePlayedThisTurn = true; }
+            } else if (totalSeconds <= (9 * 60 + 30)) { // Entre 8min y 9min30s
+                if (totalSeconds === 8 * 60 && !playedCues.has("8m0s")) { speak("8 minutos"); playedCues.add("8m0s");}
+                else if (totalSeconds === (8 * 60 + 30) && !playedCues.has("8m30s")) { speak("8 minutos 30 segundos"); playedCues.add("8m30s");}
+                else if (totalSeconds === 9 * 60 && !playedCues.has("9m0s")) { speak("9 minutos"); playedCues.add("9m0s");}
+                else if (totalSeconds === (9 * 60 + 30) && !playedCues.has("9m30s")) { speak("9 minutos 30 segundos"); playedCues.add("9m30s");}
+            } else if (totalSeconds <= 10 * 60) { // Entre >9min30s y 10min
+                if (totalSeconds === (9 * 60 + 40) && !playedCues.has("9m40s")) { speak("9 minutos 40 segundos"); playedCues.add("9m40s");}
+                else if (totalSeconds === (9 * 60 + 50) && !playedCues.has("9m50s")) { speak("9 minutos 50 segundos"); playedCues.add("9m50s");}
+                else if (totalSeconds === 10 * 60 && !playedCues.has("10m0s")) { speak("10 minutos"); playedCues.add("10m0s");}
             }
         }
 
-        async function initializeAudioAndNoSleep() {
-            logToConsole("Init: Audio & NoSleep");
+        async function initializeUserDependentFeatures() {
+            logToConsole("Initializing user-dependent features (NoSleep, SpeechSynth)...");
+            // 1. NoSleep
             if (!wakeLockEnabled && noSleep && !noSleep.isEnabled) {
                 try {
-                    await noSleep.enable();
+                    await noSleep.enable(); // NoSleep.enable() es síncrono, pero lo ponemos en async por consistencia
                     wakeLockEnabled = true;
                     logToConsole("NoSleep ON.");
                 } catch (err) {
@@ -353,51 +270,61 @@
                 }
             }
 
-            if (!speechInitialized && synth && typeof synth.speak === 'function') {
-                logToConsole("Init SpeechSynth...");
+            // 2. "Despertar" SpeechSynthesis API y cargar voces
+            if (!speechInitialized && synth) {
+                logToConsole("Attempting to awaken SpeechSynth...");
                 try {
-                    if (voices.length === 0) populateVoiceList();
+                    // Intento de hablar algo vacío para "desbloquear" la API en móviles
                     const utterance = new SpeechSynthesisUtterance('');
-                    utterance.volume = 0;
+                    utterance.volume = 0; // No queremos que suene
                     synth.speak(utterance);
+                    // synth.cancel(); // Cancelar puede ser contraproducente en algunos casos de "despertar"
                     speechInitialized = true;
-                    logToConsole("SpeechSynth Awakened.");
+                    logToConsole("SpeechSynth awakened (or attempt made).");
+
+                    // Ahora que el audio está "desbloqueado", intentar cargar/verificar voces
+                    await ensureVoicesAreLoaded();
+
                 } catch (e) {
-                    logToConsole(`SpeechSynth Awake Err: ${e.message}`);
+                    logToConsole(`Error awakening SpeechSynth: ${e.message}`);
+                    // Aún así, intentamos cargar voces
+                    await ensureVoicesAreLoaded();
                 }
+            } else if (speechInitialized) {
+                logToConsole("SpeechSynth already initialized.");
+                 // Si ya está inicializado, aún así aseguramos que la carga de voces se intente/complete
+                await ensureVoicesAreLoaded();
+            } else {
+                logToConsole("SpeechSynthesis API not available.");
             }
         }
 
         function updateButtonStates() {
             if (isRunning) {
                 startBtn.style.display = 'none';
-                stopBtn.style.display = 'block'; // o 'flex' si usas flex para centrar texto interno
+                stopBtn.style.display = 'block';
                 startBtn.disabled = true;
                 stopBtn.disabled = false;
                 resetBtn.disabled = false;
             } else {
-                startBtn.style.display = 'block'; // o 'flex'
+                startBtn.style.display = 'block';
                 stopBtn.style.display = 'none';
                 startBtn.disabled = false;
                 stopBtn.disabled = true;
-                // Reset se habilita si elapsedTime > 0, incluso si no está corriendo (pausado)
-                // y se deshabilita si elapsedTime es 0 (estado inicial o reseteado).
                 resetBtn.disabled = elapsedTime === 0;
             }
         }
 
-
         async function startTimer() {
             if (isRunning) return;
             logToConsole("Start pressed.");
-            await initializeAudioAndNoSleep();
-
-            // Si elapsedTime es 0, es un nuevo inicio. Si no, es una reanudación.
-            // startTime se ajusta para continuar desde donde se pausó.
-            startTime = Date.now() - elapsedTime; 
             
-            timerInterval = setInterval(updateTimer, 1000); // Iniciar el intervalo ANTES de cambiar isRunning
-            isRunning = true; // Establecer isRunning a true DESPUÉS de iniciar el intervalo
+            // Esta función DEBE ser llamada aquí, directamente bajo el evento de clic.
+            await initializeUserDependentFeatures();
+            
+            startTime = Date.now() - elapsedTime; 
+            isRunning = true; 
+            timerInterval = setInterval(updateTimer, 1000); // Iniciar el intervalo DESPUÉS de establecer isRunning
             
             updateButtonStates();
             logToConsole("Timer started.");
@@ -406,33 +333,26 @@
         function stopTimer() {
             if (!isRunning) return;
             clearInterval(timerInterval);
-            // Guardar el tiempo exacto transcurrido AL MOMENTO DE PARAR
             elapsedTime = Date.now() - startTime; 
-            isRunning = false; // Establecer isRunning a false DESPUÉS de parar el intervalo
+            isRunning = false; 
             
             updateButtonStates();
-            if (synth && synth.speaking) {
-                synth.cancel();
-            }
+            if (synth && synth.speaking) synth.cancel();
             logToConsole("Timer stopped. Elapsed: " + elapsedTime);
         }
 
         function resetTimer() {
-            // No es necesario llamar a stopTimer() si se va a limpiar todo.
-            // Pero es bueno para asegurar que el intervalo y el habla se detengan.
             if (isRunning) {
                 clearInterval(timerInterval);
                 isRunning = false;
             }
-            if (synth && synth.speaking) {
-                synth.cancel();
-            }
+            if (synth && synth.speaking) synth.cancel();
 
             elapsedTime = 0;
-            timerDisplay.textContent = formatTime(0); // Actualiza el display a 00:00:00
+            timerDisplay.textContent = formatTime(0);
             playedCues.clear();
             
-            updateButtonStates(); // Esto pondrá los botones en estado inicial
+            updateButtonStates();
 
             if (wakeLockEnabled && noSleep && noSleep.isEnabled) {
                 noSleep.disable();
@@ -442,19 +362,16 @@
             logToConsole("Timer reset.");
         }
         
-        // Configuración inicial de botones
-        updateButtonStates(); // Llama para establecer el estado inicial correcto
+        updateButtonStates(); // Estado inicial
 
         startBtn.addEventListener('click', startTimer);
         stopBtn.addEventListener('click', stopTimer);
         resetBtn.addEventListener('click', resetTimer);
 
         logToConsole("Page loaded. Ready.");
-        if (typeof NoSleep === 'undefined') {
-            logToConsole("NoSleep.js not loaded.");
-        }
+        if (typeof NoSleep === 'undefined') logToConsole("NoSleep.js not loaded.");
+        if (typeof speechSynthesis === 'undefined') logToConsole("SpeechSynthesis API not available on load.");
 
     </script>
-
 </body>
 </html>
