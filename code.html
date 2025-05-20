@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cronómetro con Voz</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;
+            color: #333;
+        }
+        #timer-display {
+            font-size: 4em;
+            margin-bottom: 20px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            min-width: 280px;
+            text-align: center;
+        }
+        .controls button {
+            font-size: 1.2em;
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        #startBtn { background-color: #4CAF50; color: white; }
+        #startBtn:hover { background-color: #45a049; }
+        #stopBtn { background-color: #f44336; color: white; }
+        #stopBtn:hover { background-color: #da190b; }
+        #resetBtn { background-color: #008CBA; color: white; }
+        #resetBtn:hover { background-color: #007ba7; }
+        button:disabled {
+            background-color: #cccccc;
+            color: #666666;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="timer-display">00:00:00</div>
+    <div class="controls">
+        <button id="startBtn">Start</button>
+        <button id="stopBtn" disabled>Stop</button>
+        <button id="resetBtn" disabled>Reset</button>
+    </div>
+
+    <script>
+        const timerDisplay = document.getElementById('timer-display');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const resetBtn = document.getElementById('resetBtn');
+
+        let startTime;
+        let elapsedTime = 0;
+        let timerInterval;
+        let isRunning = false;
+        let playedCues = new Set(); // Para no repetir avisos
+
+        // Soporte para Speech Synthesis
+        const synth = window.speechSynthesis;
+        let voices = [];
+
+        function populateVoiceList() {
+            if (typeof speechSynthesis === 'undefined') {
+                console.warn("Speech Synthesis no soportado.");
+                return;
+            }
+            voices = synth.getVoices().filter(voice => voice.lang.startsWith('es'));
+            if (voices.length === 0) {
+                 voices = synth.getVoices().filter(voice => voice.default && voice.lang.startsWith('es'));
+            }
+             if (voices.length === 0) { // Fallback if no Spanish default
+                voices = synth.getVoices().filter(voice => voice.lang.startsWith('es'));
+            }
+            // console.log(voices);
+        }
+
+        populateVoiceList();
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = populateVoiceList;
+        }
+
+        function speak(text) {
+            if (!synth || !text) return;
+            if (synth.speaking) {
+                // console.warn('SpeechSynthesis.speaking'); // Podría interrumpir si es necesario
+                // synth.cancel(); // Descomentar si se quiere interrumpir el habla anterior
+            }
+            const utterThis = new SpeechSynthesisUtterance(text);
+            utterThis.onend = function (event) {
+                // console.log('SpeechSynthesisUtterance.onend');
+            };
+            utterThis.onerror = function (event) {
+                console.error('SpeechSynthesisUtterance.onerror', event);
+            };
+            
+            // Intentar seleccionar una voz en español
+            let spanishVoice = voices.find(voice => voice.lang === 'es-ES' || voice.lang === 'es-MX');
+            if (!spanishVoice && voices.length > 0) {
+                spanishVoice = voices[0]; // Tomar la primera disponible en español
+            }
+
+            if (spanishVoice) {
+                utterThis.voice = spanishVoice;
+            } else {
+                // Si no hay voz en español, usar el idioma por defecto del navegador
+                // o especificar 'es' para que el navegador intente encontrar una.
+                utterThis.lang = 'es';
+            }
+            // console.log("Intentando hablar:", text, "con voz:", utterThis.voice ? utterThis.voice.name : "default", " lang:", utterThis.lang);
+            synth.speak(utterThis);
+        }
+
+        function formatTime(time) {
+            const totalSeconds = Math.floor(time / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+
+            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        function updateTimer() {
+            const currentTime = Date.now();
+            elapsedTime = currentTime - startTime;
+            timerDisplay.textContent = formatTime(elapsedTime);
+            checkAndPlayCues();
+        }
+
+        function checkAndPlayCues() {
+            const totalSeconds = Math.floor(elapsedTime / 1000);
+            const minutes = Math.floor(totalSeconds / 60);
+            const secondsInMinute = totalSeconds % 60;
+
+            let cuePlayedThisSecond = false; // Para asegurar que solo un cue se reproduce por segundo
+
+            // --- Regla 1: Primeros 30 segundos ---
+            if (totalSeconds <= 30) {
+                if (totalSeconds === 10 && !playedCues.has("10s")) {
+                    speak("10 segundos");
+                    playedCues.add("10s");
+                    cuePlayedThisSecond = true;
+                } else if (totalSeconds === 20 && !playedCues.has("20s")) {
+                    speak("20 segundos");
+                    playedCues.add("20s");
+                    cuePlayedThisSecond = true;
+                } else if (totalSeconds === 30 && !playedCues.has("30s")) {
+                    speak("30 segundos");
+                    playedCues.add("30s");
+                    cuePlayedThisSecond = true;
+                }
+            }
+
+            // --- Regla 2: De 30 segundos a 8 minutos (avisar cada minuto) ---
+            // (Excluye el minuto 0 que ya está cubierto por la regla 1)
+            if (!cuePlayedThisSecond && totalSeconds > 30 && totalSeconds < 8 * 60) {
+                if (secondsInMinute === 0 && minutes > 0) { // Cada minuto exacto
+                    const cueKey = `${minutes}m`;
+                    if (!playedCues.has(cueKey)) {
+                        speak(`${minutes} minuto${minutes > 1 ? 's' : ''}`);
+                        playedCues.add(cueKey);
+                        cuePlayedThisSecond = true;
+                    }
+                }
+            }
+
+            // --- Regla 3: De 8 minutos a 9 minutos 30 segundos (avisar cada 30 segundos) ---
+            if (!cuePlayedThisSecond && totalSeconds >= 8 * 60 && totalSeconds <= (9 * 60 + 30)) {
+                if (totalSeconds === 8 * 60 && !playedCues.has("8m0s")) { // 8:00
+                    speak("8 minutos");
+                    playedCues.add("8m0s");
+                    cuePlayedThisSecond = true;
+                } else if (totalSeconds === (8 * 60 + 30) && !playedCues.has("8m30s")) { // 8:30
+                    speak("8 minutos 30 segundos");
+                    playedCues.add("8m30s");
+                    cuePlayedThisSecond = true;
+                } else if (totalSeconds === 9 * 60 && !playedCues.has("9m0s")) { // 9:00
+                    speak("9 minutos");
+                    playedCues.add("9m0s");
+                    cuePlayedThisSecond = true;
+                } else if (totalSeconds === (9 * 60 + 30) && !playedCues.has("9m30s")) { // 9:30
+                    speak("9 minutos 30 segundos");
+                    playedCues.add("9m30s");
+                    cuePlayedThisSecond = true;
+                }
+            }
+
+            // --- Regla 4: De 9 minutos 30 segundos a 10 minutos (avisar cada 10 segundos) ---
+            if (!cuePlayedThisSecond && totalSeconds > (9 * 60 + 30) && totalSeconds <= 10 * 60) {
+                if (totalSeconds === (9 * 60 + 40) && !playedCues.has("9m40s")) { // 9:40
+                    speak("9 minutos 40 segundos");
+                    playedCues.add("9m40s");
+                    cuePlayedThisSecond = true;
+                } else if (totalSeconds === (9 * 60 + 50) && !playedCues.has("9m50s")) { // 9:50
+                    speak("9 minutos 50 segundos");
+                    playedCues.add("9m50s");
+                    cuePlayedThisSecond = true;
+                } else if (totalSeconds === 10 * 60 && !playedCues.has("10m0s")) { // 10:00
+                    speak("10 minutos");
+                    playedCues.add("10m0s");
+                    // Podrías detener el cronómetro aquí si es el límite
+                    // stopTimer();
+                    // alert("¡Cronómetro completado!");
+                    cuePlayedThisSecond = true;
+                }
+            }
+        }
+
+        function startTimer() {
+            if (!isRunning) {
+                // Para que la voz funcione, a veces necesita una interacción previa
+                // si no se ha hecho antes (como un clic). El propio botón start sirve.
+                // Un pequeño "hack" para inicializar la síntesis de voz en algunos navegadores
+                if (synth && !synth.speaking && synth.paused) {
+                     const dummyUtterance = new SpeechSynthesisUtterance('');
+                     synth.speak(dummyUtterance); // Habla algo vacío
+                     synth.cancel(); // Y lo cancela inmediatamente
+                }
+
+                startTime = Date.now() - elapsedTime; // Si se reanuda, conserva el tiempo anterior
+                timerInterval = setInterval(updateTimer, 1000);
+                isRunning = true;
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+                resetBtn.disabled = false;
+            }
+        }
+
+        function stopTimer() {
+            if (isRunning) {
+                clearInterval(timerInterval);
+                isRunning = false;
+                elapsedTime = Date.now() - startTime; // Guarda el tiempo transcurrido exacto
+                startBtn.disabled = false;
+                stopBtn.disabled = true;
+                if (synth && synth.speaking) {
+                    synth.cancel(); // Detener cualquier voz en curso
+                }
+            }
+        }
+
+        function resetTimer() {
+            stopTimer(); // Detiene el cronómetro y cancela voces
+            elapsedTime = 0;
+            timerDisplay.textContent = formatTime(0);
+            playedCues.clear(); // Limpia los avisos ya reproducidos
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            resetBtn.disabled = true;
+        }
+
+        startBtn.addEventListener('click', startTimer);
+        stopBtn.addEventListener('click', stopTimer);
+        resetBtn.addEventListener('click', resetTimer);
+
+        // Asegurar que las voces se carguen antes de usarlas (importante para algunos navegadores)
+        // window.onload = () => {
+        //    populateVoiceList();
+        // };
+        // Es mejor usar onvoiceschanged, que ya está arriba.
+    </script>
+
+</body>
+</html>
